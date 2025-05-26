@@ -8,23 +8,20 @@ def scrape_boe():
 
     resultados = []
 
-    filas = soup.select("table tr")[1:]  # Saltamos encabezado
+    # Buscar contenedores de subasta
+    contenedores = soup.select("div.resultado_subasta")
 
-    for fila in filas:
-        columnas = fila.find_all("td")
-        if len(columnas) < 4:
-            continue
+    for contenedor in contenedores:
+        enlace_tag = contenedor.select_one("a")
+        enlace = "https://subastas.boe.es/" + enlace_tag["href"]
+        titulo = enlace_tag.get_text(strip=True)
 
-        enlace_relativo = columnas[0].find("a")["href"]
-        enlace = "https://subastas.boe.es/" + enlace_relativo
-        titulo = columnas[0].get_text(strip=True)
-        lugar = columnas[1].get_text(strip=True)
-        tipo_bien = columnas[2].get_text(strip=True)
-        fecha = columnas[3].get_text(strip=True)
+        descripcion_tag = contenedor.select_one("div.subasta_detalle")
+        descripcion = descripcion_tag.get_text(strip=True) if descripcion_tag else "Sin descripción"
 
         resultados.append({
-            "titulo": f"{titulo} ({tipo_bien})",
-            "descripcion": f"Ubicación: {lugar}, Fecha: {fecha}",
+            "titulo": titulo,
+            "descripcion": descripcion,
             "url": enlace
         })
 
