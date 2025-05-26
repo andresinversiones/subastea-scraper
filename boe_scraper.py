@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 def scrape_boe():
-  url = "https://subastas.boe.es/subastas_ava.php?campo%5B%5D=BIEN&dato%5B%5D=INMUEBLE"  
+    url = "https://subastas.boe.es/subastas_ava.php?campo%5B%5D=BIEN&dato%5B%5D=INMUEBLE"
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
 
