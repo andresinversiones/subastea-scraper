@@ -1,23 +1,20 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from ia import analizar_subasta  # Importa la función desde ia.py
+from ia import analizar_subasta
+from boe_scraper import scrape_boe
 
-# Obtener la URL de conexión desde las variables de entorno
+# Conexión a la base de datos
 DATABASE_URL = os.getenv("DATABASE_URL")
-
 if not DATABASE_URL:
     raise ValueError("❌ ERROR: DATABASE_URL no está definida.")
 
-# Función para conectarse a la base de datos
 def conectar_db():
-    print("🟡 Conectando a la base de datos...")
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
-# Función para guardar una subasta de prueba
-def guardar_subasta():
-    print("📥 Guardando subasta de ejemplo...")
+# Guardar subasta en la base de datos
+def guardar_subasta(subasta):
     conn = conectar_db()
     cur = conn.cursor()
     cur.execute("""
@@ -25,33 +22,35 @@ def guardar_subasta():
             id SERIAL PRIMARY KEY,
             titulo TEXT,
             descripcion TEXT,
-            url TEXT
+            url TEXT,
+            analisis TEXT
         )
     """)
     cur.execute("""
-        INSERT INTO subastas (titulo, descripcion, url)
-        VALUES (%s, %s, %s);
+        INSERT INTO subastas (titulo, descripcion, url, analisis)
+        VALUES (%s, %s, %s, %s);
     """, (
-        "Subasta de prueba",
-        "Esto es una entrada de prueba para análisis con IA.",
-        "https://ejemplo.com"
+        subasta["titulo"],
+        subasta["descripcion"],
+        subasta["url"],
+        subasta["analisis"]
     ))
     conn.commit()
     cur.close()
     conn.close()
-    print("✅ Subasta guardada correctamente.")
 
-# Ejecutar
+# Ejecutar todo
 if __name__ == "__main__":
-    print("🚀 Ejecutando scraper...")
-    guardar_subasta()
+    print("🚀 Ejecutando scraper BOE...")
 
-    subasta = {
-        "titulo": "Subasta de prueba",
-        "descripcion": "Esto es una entrada de prueba para análisis con IA.",
-        "url": "https://ejemplo.com"
-    }
+    subastas = scrape_boe()
+    print(f"🔎 Encontradas {len(subastas)} subastas")
 
-    print("🤖 Analizando subasta con IA...")
-    resultado = analizar_subasta(subasta)
-    print("🧠 Resultado IA:", resultado)
+    for subasta in subastas[:5]:  # Limitar a 5 para evitar coste en pruebas
+        print(f"🤖 Analizando: {subasta['titulo']}")
+        analisis = analizar_subasta(subasta)
+        subasta["analisis"] = analisis
+        guardar_subasta(subasta)
+        print(f"🧠 Resultado IA: {analisis}")
+
+    print("✅ Proceso finalizado.")
