@@ -2,7 +2,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from ia import analizar_subasta
-from boe_rss import scrape_boe_rss
+from seguridad_social_scraper import scrape_seguridad_social
 
 # Conexión a la base de datos
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -41,9 +41,9 @@ def guardar_subasta(subasta):
 
 # Ejecutar flujo completo
 if __name__ == "__main__":
-    print("🚀 Ejecutando scraper BOE RSS...")
+    print("🚀 Ejecutando scraper Seguridad Social...")
 
-    subastas = scrape_boe_rss()
+    subastas = scrape_seguridad_social()
     print(f"🔎 Encontradas {len(subastas)} subastas")
 
     for subasta in subastas[:5]:  # Limitar a 5 para pruebas
