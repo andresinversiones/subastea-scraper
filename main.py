@@ -1,8 +1,9 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from ia import analizar_subasta  # Importa la función desde ia.py
 
-# Obtener la URL de conexión desde las variables de entorno de Railway
+# Obtener la URL de conexión desde las variables de entorno
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
@@ -10,11 +11,13 @@ if not DATABASE_URL:
 
 # Función para conectarse a la base de datos
 def conectar_db():
+    print("🟡 Conectando a la base de datos...")
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
-# Función para insertar una subasta de prueba
+# Función para guardar una subasta de prueba
 def guardar_subasta():
+    print("📥 Guardando subasta de ejemplo...")
     conn = conectar_db()
     cur = conn.cursor()
     cur.execute("""
@@ -30,15 +33,25 @@ def guardar_subasta():
         VALUES (%s, %s, %s);
     """, (
         "Subasta de prueba",
-        "Esto es una subasta de ejemplo generada automáticamente.",
-        "https://ejemplo.com/subasta"
+        "Esto es una entrada de prueba para análisis con IA.",
+        "https://ejemplo.com"
     ))
     conn.commit()
     cur.close()
     conn.close()
+    print("✅ Subasta guardada correctamente.")
 
 # Ejecutar
 if __name__ == "__main__":
-    print("✅ Ejecutando scraper...")
+    print("🚀 Ejecutando scraper...")
     guardar_subasta()
-    print("✅ Subasta guardada correctamente.")
+
+    subasta = {
+        "titulo": "Subasta de prueba",
+        "descripcion": "Esto es una entrada de prueba para análisis con IA.",
+        "url": "https://ejemplo.com"
+    }
+
+    print("🤖 Analizando subasta con IA...")
+    resultado = analizar_subasta(subasta)
+    print("🧠 Resultado IA:", resultado)
