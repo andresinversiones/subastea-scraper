@@ -1,27 +1,24 @@
 import os
-from openai import OpenAI
+import openai
+
+# Inicializar el cliente de OpenAI
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def analizar_subasta(subasta):
-    api_key = os.getenv("OPENAI_API_KEY")
-    client = OpenAI(api_key=api_key)
-
     prompt = f"""
-Eres un experto en inversiones y subastas. Analiza esta subasta y dime si parece una buena oportunidad:
-
-Título: {subasta['titulo']}
-Descripción: {subasta['descripcion']}
-URL: {subasta['url']}
-
-Responde con un resumen profesional en una línea.
-"""
+    Analiza esta subasta y di si parece rentable, arriesgada o poco interesante:
+    
+    Título: {subasta['titulo']}
+    Descripción: {subasta['descripcion']}
+    URL: {subasta['url']}
+    """
 
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "Eres un asesor de inversiones experto en subastas."},
+            {"role": "system", "content": "Eres un experto en inversión inmobiliaria."},
             {"role": "user", "content": prompt}
         ]
     )
 
     return response.choices[0].message.content.strip()
-     
