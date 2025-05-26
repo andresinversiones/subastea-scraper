@@ -1,0 +1,1 @@
+print("✅ Scraper funcionando correctamente.")
