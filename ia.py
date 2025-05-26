@@ -1,36 +1,27 @@
 import os
-import openai
+from openai import OpenAI
 
-# Cargar clave API desde entorno
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-if not OPENAI_API_KEY:
-    raise ValueError("❌ ERROR: No se encontró la clave OPENAI_API_KEY.")
-
-# Configurar cliente OpenAI
-openai.api_key = OPENAI_API_KEY
-
-# Función que llama a GPT-4 para analizar la subasta
 def analizar_subasta(subasta):
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key)
+
     prompt = f"""
-    Eres un experto en inversión inmobiliaria. Analiza esta subasta y responde en 3 frases:
-    1. ¿Es interesante o no? Justifica.
-    2. Riesgo estimado (bajo, medio, alto).
-    3. Recomendación final.
+Eres un experto en inversiones y subastas. Analiza esta subasta y dime si parece una buena oportunidad:
 
-    Datos de la subasta:
-    Título: {subasta['titulo']}
-    Descripción: {subasta['descripcion']}
-    URL: {subasta['url']}
-    """
+Título: {subasta['titulo']}
+Descripción: {subasta['descripcion']}
+URL: {subasta['url']}
 
-    try:
-        respuesta = openai.ChatCompletion.create(
-            model="gpt-4-0125-preview",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
-            temperature=0.7,
-        )
-        return respuesta.choices[0].message["content"].strip()
-    except Exception as e:
-        return f"❌ ERROR IA: {str(e)}"
+Responde con un resumen profesional en una línea.
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "Eres un asesor de inversiones experto en subastas."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.choices[0].message.content.strip()
+     
